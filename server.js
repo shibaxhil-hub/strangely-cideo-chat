@@ -8,19 +8,41 @@ const PORT = process.env.PORT || 10000;
 app.use(express.static(__dirname));
 
 app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/terms.html");
+    res.sendFile(__dirname + "/index.html");
 });
 
+let waitingUser = null;
+
 io.on("connection", (socket) => {
-    console.log("User connected");
+    console.log("User connected:", socket.id);
+
+    if (!waitingUser) {
+        waitingUser = socket;
+        console.log("User waiting:", socket.id);
+        return;
+    }
+
+    const partner = waitingUser;
+    waitingUser = null;
+    console.log("Matched:", socket.id, "<->", partner.id);
+
+    socket.emit("matched");
+    partner.emit("matched");
 
     socket.on("signal", (data) => {
-        socket.broadcast.emit("signal", data);
+        partner.emit("signal", data);
+    });
+    partner.on("signal", (data) => {
+        socket.emit("signal", data);
     });
 
     socket.on("disconnect", () => {
-        console.log("User disconnected");
-        socket.broadcast.emit("partnerDisconnected");
+        partner.emit("partnerDisconnected");
+        console.log("Disconnected:", socket.id);
+    });
+    partner.on("disconnect", () => {
+        socket.emit("partnerDisconnected");
+        console.log("Disconnected:", partner.id);
     });
 });
 
