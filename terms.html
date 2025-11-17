@@ -4,77 +4,127 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Strangely • Terms & Conditions</title>
+
 <style>
-body 
-   <button onclick="window.location.href='index.html'">Agree & Continue</button>
-    {
-    margin: 0;
-    font-family: "Poppins", sans-serif;
-    background: radial-gradient(circle at top, #0a0f25, #030614);
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    text-align: center;
-    padding: 20px;
-    box-sizing: border-box;
-}
-.terms-card {
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.15);
-    padding: 40px 30px;
-    border-radius: 20px;
-    max-width: 600px;
-    overflow-y: auto;
-    max-height: 90vh;
-}
-h1 { font-size: 32px; margin-bottom: 20px; }
-p { font-size: 15px; opacity: 0.8; margin-bottom: 15px; text-align: justify; }
-.accept-btn {
-    padding: 15px 50px;
-    font-size: 18px;
-    font-weight: 600;
-    border: none;
-    border-radius: 50px;
-    background: linear-gradient(45deg, #5f9fff, #ff69b4);
-    color: white;
-    cursor: pointer;
-    transition: 0.3s;
-    margin-top: 20px;
-}
-.accept-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255,105,180,0.5); }
-.footer { margin-top: 20px; font-size: 12px; opacity: 0.6; }
+    body {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        background: radial-gradient(circle at top, #0a0f25, #030614);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        padding: 20px;
+        overflow: hidden;
+    }
+
+    .circle {
+        position: absolute;
+        width: 350px;
+        height: 350px;
+        border-radius: 50%;
+        filter: blur(120px);
+        z-index: -1;
+    }
+    .c1 { background: #5f9fff; top: -80px; left: -60px; }
+    .c2 { background: #ff69b4; bottom: -80px; right: -60px; }
+
+    .terms-card {
+        width: 90%;
+        max-width: 650px;
+        max-height: 88vh;
+        padding: 35px 30px;
+        border-radius: 25px;
+        background: rgba(255,255,255,0.07);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(255,255,255,0.15);
+        box-shadow: 0 0 35px rgba(0,0,0,0.4);
+        overflow-y: auto;
+        animation: fadeIn 1s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+        font-size: 34px;
+        font-weight: 700;
+        background: linear-gradient(to right, #5f9fff, #ff69b4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    p {
+        font-size: 15px;
+        opacity: 0.85;
+        line-height: 1.6;
+        margin-bottom: 14px;
+    }
+
+    .accept-btn {
+        width: 100%;
+        padding: 15px 0;
+        font-size: 19px;
+        font-weight: 600;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        margin-top: 20px;
+        background: linear-gradient(45deg, #5f9fff, #ff69b4);
+        transition: 0.3s;
+    }
+
+    .accept-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 25px rgba(255,105,180,0.5);
+    }
+
+    .footer {
+        margin-top: 20px;
+        font-size: 12px;
+        opacity: 0.55;
+        text-align: center;
+    }
 </style>
 </head>
+
 <body>
+
+<div class="circle c1"></div>
+<div class="circle c2"></div>
 
 <div class="terms-card">
     <h1>Terms & Conditions</h1>
-    <p>Welcome to <strong>Strangely</strong>, a platform for random video chatting. By clicking “I Agree”, you confirm that you meet the following requirements and agree to follow our rules.</p>
-    
-    <p>1. You must be <strong>18 years or older</strong> to use this platform.</p>
-    <p>2. <strong>No nudity, sexual content, or adult material</strong> is allowed. Any user violating this rule will be immediately banned.</p>
-    <p>3. <strong>No bullying, harassment, threats, or hate speech</strong> is allowed.</p>
-    <p>4. <strong>No illegal activities</strong> such as sharing pirated content or promoting violence.</p>
-    <p>5. Do not attempt to record or share other users’ video or personal information without their consent.</p>
-    <p>6. Strangely may monitor and moderate content to ensure a safe environment.</p>
-    <p>7. By using this platform, you agree to <strong>follow all rules</strong> and accept that violations can result in immediate removal or legal action if necessary.</p>
-    
-    <p>Please use responsibly and enjoy meeting new people safely!</p>
-    
-    <button class="accept-btn" onclick="acceptTerms()">I Agree</button>
+
+    <p>Welcome to <strong>Strangely</strong>, a premium random video chatting platform. By tapping “I Agree”, you confirm that you meet the requirements and agree to our platform rules.</p>
+
+    <p><strong>1.</strong> You must be <strong>18 years or older</strong> to use this service.</p>
+    <p><strong>2.</strong> <strong>No nudity or sexual content</strong> is permitted. Violating this will result in an instant ban.</p>
+    <p><strong>3.</strong> Do not engage in <strong>bullying, harassment, hate speech, or threats</strong>.</p>
+    <p><strong>4.</strong> Do not promote or take part in any <strong>illegal activity</strong>.</p>
+    <p><strong>5.</strong> Recording or sharing another user’s video without consent is strictly forbidden.</p>
+    <p><strong>6.</strong> Strangely may monitor and moderate behaviour to maintain a safe environment.</p>
+    <p><strong>7.</strong> Violating any rules may result in account removal or further actions.</p>
+
+    <p>Please use the platform responsibly and stay safe.</p>
+
+    <button class="accept-btn" onclick="acceptTerms()">I Agree & Continue</button>
+
     <div class="footer">© 2025 Strangely — All Rights Reserved</div>
 </div>
 
 <script>
 function acceptTerms() {
-    localStorage.setItem('acceptedTerms', 'yes');
-    location.href = 'index.html'; // Redirect to gender selection or chat
+    localStorage.setItem("acceptedTerms", "yes");
+    window.location.href = "index.html";
 }
 </script>
 
 </body>
-
 </html>
