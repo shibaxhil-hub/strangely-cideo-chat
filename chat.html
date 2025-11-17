@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Strangely • Video Chat</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
+
+<style>
+  :root{
+    --bg-1: #0a0f25;
+    --bg-2: #030614;
+    --accent-a: #5f9fff;
+    --accent-b: #ff69b4;
+    --glass: rgba(255,255,255,0.06);
+  }
+  html,body{height:100%;margin:0;font-family:Poppins,system-ui,Segoe UI,Arial; background:radial-gradient(circle at top,var(--bg-1),var(--bg-2)); color:#fff;}
+  .circle{position:absolute;width:300px;height:300px;border-radius:50%;filter:blur(100px);z-index:0}
+  .c1{background:#4d86ff;top:-60px;left:-50px}
+  .c2{background:#ff5f91;bottom:-60px;right:-50px}
+
+  .wrap{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;padding:18px;box-sizing:border-box;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 10px;}
+  .title{font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));-webkit-background-clip:text;color:transparent}
+  .controls-row{display:flex;gap:10px;align-items:center}
+  .btn{background:linear-gradient(45deg,var(--accent-a),var(--accent-b));border:none;padding:10px 14px;border-radius:999px;color:#fff;font-weight:600;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.3)}
+  .small-btn{padding:8px 10px;font-size:14px}
+
+  .main{flex:1;display:flex;gap:18px;padding:12px;box-sizing:border-box}
+  .videos{flex:2;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  video{width:100%;height:100%;object-fit:cover;border-radius:14px;background:#000;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+  .panel{flex:1;min-width:300px;max-width:420px;background:var(--glass);border-radius:14px;padding:12px;display:flex;flex-direction:column;box-shadow:0 6px 20px rgba(0,0,0,0.4);backdrop-filter:blur(8px)}
+  .panel h3{margin:0 0 8px 0;font-size:16px}
+  .messages{flex:1;overflow-y:auto;padding:8px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent)}
+  .msg{margin:6px 0;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.03);font-size:14px}
+  .msg.you{background:linear-gradient(90deg, rgba(95,159,255,0.14), rgba(255,105,180,0.14));text-align:left}
+  .input-row{display:flex;gap:8px;margin-top:10px;align-items:center}
+  .input-row input{flex:1;padding:10px 14px;border-radius:999px;border:none;background:rgba(255,255,255,0.06);color:#fff;font-size:14px}
+  .emoji-btn{padding:10px;border-radius:999px;border:none;background:transparent;color:#fff;cursor:pointer;font-size:18px}
+  .meta{font-size:12px;opacity:0.7;margin-top:8px;text-align:center}
+
+  @media(max-width:900px){
+    .main{flex-direction:column}
+    .videos{grid-template-columns:1fr}
+    .panel{max-width:none;width:100%}
+  }
+</style>
+</head>
+<body>
+
+<div class="circle c1"></div>
+<div class="circle c2"></div>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="title">Strangely — Premium Video Chat</div>
+    <div class="controls-row">
+      <div id="status" style="font-size:13px;opacity:0.9">Connecting…</div>
+      <button class="btn small-btn" id="nextBtn">Next</button>
+      <button class="btn small-btn" id="endBtn">End</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="videos">
+      <video id="localVideo" autoplay muted playsinline></video>
+      <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+
+    <div class="panel">
+      <h3>Chat</h3>
+      <div class="messages" id="chatMessages" aria-live="polite"></div>
+
+      <div class="input-row">
+        <button class="emoji-btn" id="emojiBtn" title="Emoji">😊</button>
+        <input id="chatInput" placeholder="Type a message..." autocomplete="off" />
+        <button class="btn small-btn" id="sendBtn">Send</button>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+        <button class="btn small-btn" id="muteBtn">Mute</button>
+        <button class="btn small-btn" id="camBtn">Camera Off</button>
+      </div>
+
+      <div class="meta" id="metaInfo">You: <span id="genderLabel">Not selected</span></div>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+
+(() => {
+  if (localStorage.getItem('acceptedTerms') !== 'yes') {
+    alert('You must accept Terms & Conditions first.');
+    window.location.href = 'terms.html';
+    return;
+  }
+
+  const gender = localStorage.getItem('selectedGender') || 'Not selected';
+  document.getElementById('genderLabel').textContent = gender;
+
+  const localVideo = document.getElementById('localVideo');
+  const remoteVideo = document.getElementById('remoteVideo');
+  const statusEl = document.getElementById('status');
+  const chatMessages = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const endBtn = document.getElementById('endBtn');
+  const muteBtn = document.getElementById('muteBtn');
+  const camBtn = document.getElementById('camBtn');
+
+  const picker = new EmojiButton({ position: 'top-start' });
+  const emojiBtn = document.getElementById('emojiBtn');
+  picker.on('emoji', emoji => {
+    chatInput.value += emoji;
+    chatInput.focus();
+  });
+  emojiBtn.addEventListener('click', () => picker.togglePicker(emojiBtn));
+
+  const socket = io(); // requires server running with socket.io
+  let peer = null;
+  let localStream = null;
+  let isMuted = false;
+  let camOff = false;
+
+  async function startLocalStream() {
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+    } catch (err) {
+      console.warn('Media access failed, using empty stream', err);
+      localStream = new MediaStream();
+    }
+    localVideo.srcObject = localStream;
+  }
+
+  startLocalStream();
+
+  function appendMessage(text, who='you') {
+    const p = document.createElement('div');
+    p.className = 'msg ' + (who === 'you' ? 'you' : 'other');
+    p.textContent = (who === 'you' ? 'You: ' : 'Stranger: ') + text;
+    chatMessages.appendChild(p);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  socket.on('connect', () => {
+    statusEl.textContent = 'Connected to server';
+  });
+
+  socket.on('matched', () => {
+    statusEl.textContent = 'Matched — establishing connection...';
+    startPeer(false); // if server informs matched, we can let peer negotiation start — we'll let SimplePeer decide initiator by socket id ordering
+  });
+
+  socket.on('signal', (data) => {
+    if (peer) peer.signal(data);
+  });
+
+  socket.on('partnerDisconnected', () => {
+    appendMessage('Partner disconnected', 'other');
+    cleanupPeer();
+    statusEl.textContent = 'Partner disconnected — click Next to find someone else';
+  });
+
+  function startPeer(forceInitiator = false) {
+    if (peer) return;
+
+    const initiator = (forceInitiator) ? true : (socket.id && socket.id < (socket.partnerId || 'z')); // fallback
+    peer = new SimplePeer({ initiator, stream: localStream, trickle: false });
+
+    peer.on('signal', data => {
+      socket.emit('signal', data);
+    });
+
+    peer.on('connect', () => {
+      statusEl.textContent = 'Connected to partner';
+      appendMessage('You are now connected!', 'other');
+    });
+
+    peer.on('stream', stream => {
+      // display remote stream
+      remoteVideo.srcObject = stream;
+    });
+
+    peer.on('data', data => {
+      const text = (typeof data === 'string') ? data : new TextDecoder().decode(data);
+      appendMessage(text, 'other');
+    });
+
+    peer.on('close', () => {
+      appendMessage('Connection closed', 'other');
+      cleanupPeer();
+    });
+
+    peer.on('error', err => {
+      console.error('Peer error', err);
+      appendMessage('Connection error', 'other');
+      cleanupPeer();
+    });
+  }
+
+  function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+    appendMessage(text, 'you');
+    if (peer && peer.connected) {
+      try { peer.send(text); }
+      catch (e) { console.warn('Send failed', e); }
+    } else {
+      appendMessage('(No partner yet) Message stored locally', 'other');
+    }
+    chatInput.value = '';
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+
+  function toggleMute() {
+    if (!localStream) return;
+    isMuted = !isMuted;
+    localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
+    muteBtn.textContent = isMuted ? 'Unmute' : 'Mute';
+  }
+  muteBtn.addEventListener('click', toggleMute);
+
+  function toggleCamera() {
+    if (!localStream) return;
+    camOff = !camOff;
+    localStream.getVideoTracks().forEach(t => t.enabled = !camOff);
+    camBtn.textContent = camOff ? 'Camera On' : 'Camera Off';
+  }
+  camBtn.addEventListener('click', toggleCamera);
+
+  function endCall() {
+    cleanupPeer();
+    if (localStream) {
+      localStream.getTracks().forEach(t => t.stop());
+      localStream = null;
+    }
+    statusEl.textContent = 'Call ended';
+    setTimeout(() => { window.location.href = 'index.html'; }, 600);
+  }
+  endBtn.addEventListener('click', endCall);
+
+  nextBtn.addEventListener('click', () => {
+    cleanupPeer();
+    window.location.reload();
+  });
+
+  function cleanupPeer() {
+    if (peer) {
+      try { peer.destroy(); } catch (e) { /* ignore */ }
+      peer = null;
+    }
+  }
+
+  window.addEventListener('beforeunload', () => {
+    cleanupPeer();
+    try { socket.close(); } catch (e) {}
+  });
+
+  setTimeout(() => {
+    if (!peer && statusEl.textContent.indexOf('Connected') === -1) {
+      statusEl.textContent = 'Waiting for partner...';
+    }
+  }, 800);
+
+})();
+</script>
+
+</body>
+</html>

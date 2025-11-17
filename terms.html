@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strangely • Terms & Conditions</title>
+<style>
+body {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    background: radial-gradient(circle at top, #0a0f25, #030614);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.terms-card {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 40px 30px;
+    border-radius: 20px;
+    max-width: 600px;
+    overflow-y: auto;
+    max-height: 90vh;
+}
+h1 { font-size: 32px; margin-bottom: 20px; }
+p { font-size: 15px; opacity: 0.8; margin-bottom: 15px; text-align: justify; }
+.accept-btn {
+    padding: 15px 50px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(45deg, #5f9fff, #ff69b4);
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 20px;
+}
+.accept-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255,105,180,0.5); }
+.footer { margin-top: 20px; font-size: 12px; opacity: 0.6; }
+</style>
+</head>
+<body>
+
+<div class="terms-card">
+    <h1>Terms & Conditions</h1>
+    <p>Welcome to <strong>Strangely</strong>, a platform for random video chatting. By clicking “I Agree”, you confirm that you meet the following requirements and agree to follow our rules.</p>
+    
+    <p>1. You must be <strong>18 years or older</strong> to use this platform.</p>
+    <p>2. <strong>No nudity, sexual content, or adult material</strong> is allowed. Any user violating this rule will be immediately banned.</p>
+    <p>3. <strong>No bullying, harassment, threats, or hate speech</strong> is allowed.</p>
+    <p>4. <strong>No illegal activities</strong> such as sharing pirated content or promoting violence.</p>
+    <p>5. Do not attempt to record or share other users’ video or personal information without their consent.</p>
+    <p>6. Strangely may monitor and moderate content to ensure a safe environment.</p>
+    <p>7. By using this platform, you agree to <strong>follow all rules</strong> and accept that violations can result in immediate removal or legal action if necessary.</p>
+    
+    <p>Please use responsibly and enjoy meeting new people safely!</p>
+    
+    <button class="accept-btn" onclick="acceptTerms()">I Agree</button>
+    <div class="footer">© 2025 Strangely — All Rights Reserved</div>
+</div>
+
+<script>
+function acceptTerms() {
+    localStorage.setItem('acceptedTerms', 'yes');
+    location.href = 'index.html'; // Redirect to gender selection or chat
+}
+</script>
+
+</body>
+</html>
