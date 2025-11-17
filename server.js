@@ -1,49 +1,29 @@
-const express = require('express');
-const path = require('path');
-const http = require('http');
-const { Server } = require('socket.io');
-
+const express = require("express");
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const http = require("http").createServer(app);
+const io = require("socket.io")(http);
 
-const port = 3000;
+const PORT = process.env.PORT || 10000;
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'terms.html'));
+app.use(express.static(__dirname));
+
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/terms.html");
 });
 
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'terms.html')));
-app.get('/terms.html', (req, res) => res.sendFile(path.join(__dirname, 'terms.html')));
-app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/chat.html', (req, res) => res.sendFile(path.join(__dirname, 'chat.html')));
+io.on("connection", (socket) => {
+    console.log("User connected");
 
-let waitingUser = null;
-
-io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
-
-    if (waitingUser) {
-        socket.emit('matched');
-        waitingUser.emit('matched');
-
-        socket.partner = waitingUser;
-        waitingUser.partner = socket;
-
-        waitingUser = null;
-    } else {
-        waitingUser = socket;
-    }
-
-    socket.on('signal', (data) => {
-        if (socket.partner) socket.partner.emit('signal', data);
+    socket.on("signal", (data) => {
+        socket.broadcast.emit("signal", data);
     });
 
-    socket.on('disconnect', () => {
-        if (socket.partner) socket.partner.emit('partnerDisconnected');
-        if (waitingUser === socket) waitingUser = null;
-        console.log('User disconnected:', socket.id);
+    socket.on("disconnect", () => {
+        console.log("User disconnected");
+        socket.broadcast.emit("partnerDisconnected");
     });
 });
 
-server.listen(port, () => console.log(`Server running at http://localhost:${port}`));
+http.listen(PORT, () => {
+    console.log("Server running on port " + PORT);
+});
